@@ -1,0 +1,10 @@
+# ignore tar files
+**/*.tar*
+
+# ignore common image types
+**/*.png
+**/*.jpg
+**/*.jpeg
+
+# ignore lfw dataset
+**/lfw*
