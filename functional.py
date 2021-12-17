@@ -1,6 +1,7 @@
 import os
 import os.path
 import time
+import numpy
 from PIL import Image
 
 import torch
@@ -8,7 +9,7 @@ from torch.utils.data import DataLoader, Dataset
 
 
 def default_loader(path):
-    img = Image.open(path).convert('L')
+    img = Image.open(path)
     return img
 
 
@@ -105,20 +106,17 @@ class TrainingHelper:
         Computes the precision@k for the specified values of k
         """
 
-        maxk = max(topk)
+        # size of this batch
         batch_size = target.size(0)
 
-        _, pred = output.topk(maxk, 1, True, True)
-        pred = pred.t()
-        correct = pred.eq(target.view(1, -1).expand_as(pred))
+        # get pred results of each batch (dim 1)
+        pred = torch.argmax(output, 1)
 
-        # correct_k = correct[:k].view(-1).float().sum(0)
-        # res = correct_k.mul_(100.0 / batch_size)
-        res = []
-        for k in topk:
-            correct_k = correct[:k].view(-1).float().sum(0)
-            res.append(correct_k.mul_(100.0 / batch_size))
-        return res
+        # compare results and targets to calc num of correct
+        correct = pred.eq(target).float()
+        acc = correct.sum(0) / batch_size
+
+        return [acc]
 
     def adjust_learning_rate(self, epoch):
         """
