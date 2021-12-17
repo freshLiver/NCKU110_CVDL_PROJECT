@@ -1,11 +1,10 @@
 import os
 import os.path
-
 import time
 from PIL import Image
 
 import torch
-import torch.utils.data as data
+from torch.utils.data import DataLoader, Dataset
 
 
 def default_loader(path):
@@ -22,10 +21,11 @@ def default_list_reader(fileList):
     return imgList
 
 
-class ImageList(data.Dataset):
+class ImageList(Dataset):
 
     def __init__(self,
-                 root, fileList,
+                 root,
+                 fileList,
                  transform=None,
                  list_reader=default_list_reader,
                  loader=default_loader
@@ -73,8 +73,8 @@ class TrainingHelper:
 
     # Init Util
     def __init__(self,
-                 train_dataloader: torch.utils.data.dataloader,
-                 valid_dataloader: torch.utils.data.dataloader,
+                 train_dataloader: DataLoader,
+                 valid_dataloader: DataLoader,
                  epochs: int,
                  batch_size: int,
                  learning_rate: float,
