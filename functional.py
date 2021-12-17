@@ -43,8 +43,6 @@ class ImageList(Dataset):
 
         if self.transform is not None:
             img = self.transform(img)
-
-        print(np.array(img).shape)
         return img, target
 
     def __len__(self):
