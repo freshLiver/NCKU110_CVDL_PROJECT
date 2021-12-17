@@ -155,7 +155,7 @@ class TrainingHelper:
             target_var = torch.autograd.Variable(target)
 
             # compute output
-            output, _ = self.MODEL(input_var)
+            output = self.MODEL(input_var)
             loss = self.CRITERION(output, target_var)
 
             # measure accuracy and record loss
