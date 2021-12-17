@@ -59,7 +59,7 @@ class resblock(nn.Module):
 
 
 class network_9layers(nn.Module):
-    def __init__(self, num_classes=79077):
+    def __init__(self, num_classes):
         super(network_9layers, self).__init__()
         self.features = nn.Sequential(
             MaxFeatureMap(1, 48, 5, 1, 2),
@@ -85,7 +85,7 @@ class network_9layers(nn.Module):
 
 
 class network_29layers(nn.Module):
-    def __init__(self, block, layers, num_classes=79077):
+    def __init__(self, block, layers, num_classes):
         super(network_29layers, self).__init__()
         self.conv1 = MaxFeatureMap(1, 48, 5, 1, 2)
         self.pool1 = nn.MaxPool2d(kernel_size=2, stride=2, ceil_mode=True)
@@ -135,7 +135,7 @@ class network_29layers(nn.Module):
 
 
 class network_29layers_v2(nn.Module):
-    def __init__(self, block, layers, num_classes=79077):
+    def __init__(self, block, layers, num_classes):
         super(network_29layers_v2, self).__init__()
         self.conv1 = MaxFeatureMap(1, 48, 5, 1, 2)
         self.block1 = self._make_layer(block, layers[0], 48, 48)
