@@ -71,10 +71,10 @@ def get_dataset(tick_size: int = 100) -> int:
 
 if __name__ == "__main__":
 
-    NUM_CLASSES = get_dataset(1000)
+    NUM_CLASSES = get_dataset(100)
 
     from torchvision.models.vgg import vgg16
-    model = vgg16(pretrained=True, num_classes=NUM_CLASSES)
+    model = vgg16(pretrained=False, num_classes=NUM_CLASSES)
 
     # large lr for last fc parameters
     if torch.cuda.is_available():
