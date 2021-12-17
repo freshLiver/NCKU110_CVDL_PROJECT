@@ -17,7 +17,7 @@ from torch.utils.data import DataLoader
 EPOCHS = 5
 BS = 128             # batch size
 LR = 0.0001          # learning rate
-NUM_WORKER = 2
+NUM_WORKER = 0
 PRINT_FREQUENCY = 10
 VALID_RATIO = 0.2
 
