@@ -1,7 +1,7 @@
 import os
 import os.path
 import time
-import numpy
+import numpy as np
 from PIL import Image
 
 import torch
@@ -43,6 +43,8 @@ class ImageList(Dataset):
 
         if self.transform is not None:
             img = self.transform(img)
+
+        print(np.array(img).shape)
         return img, target
 
     def __len__(self):
@@ -204,7 +206,7 @@ class TrainingHelper:
                 target_var = torch.autograd.Variable(target)
 
                 # compute output
-                output, _ = self.MODEL(input_var)
+                output = self.MODEL(input_var)
                 loss = self.CRITERION(output, target_var)
 
                 # measure accuracy and record loss
