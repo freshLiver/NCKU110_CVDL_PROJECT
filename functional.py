@@ -101,22 +101,16 @@ class TrainingHelper:
         self.PRINT_FREQUENCY = print_frequency
 
     @staticmethod
-    def accuracy(output, target, topk=(1,)):
+    def accuracy(output, target):
         """
         Computes the precision@k for the specified values of k
         """
-
-        # size of this batch
-        batch_size = target.size(0)
-
         # get pred results of each batch (dim 1)
         pred = torch.argmax(output, 1)
 
         # compare results and targets to calc num of correct
-        correct = pred.eq(target).float()
-        acc = correct.sum(0) / batch_size
-
-        return [acc]
+        accuracy = pred.eq(target).float().sum(0).item() / target.size(0)
+        return accuracy
 
     def adjust_learning_rate(self, epoch):
         """
@@ -136,9 +130,8 @@ class TrainingHelper:
 
         batch_time = TrainingHelper.AverageMeter()
         data_time = TrainingHelper.AverageMeter()
-        losses = TrainingHelper.AverageMeter()
-        top1 = TrainingHelper.AverageMeter()
-        top5 = TrainingHelper.AverageMeter()
+        train_losses = TrainingHelper.AverageMeter()
+        train_accuracy = TrainingHelper.AverageMeter()
 
         self.MODEL.train()
 
@@ -151,21 +144,19 @@ class TrainingHelper:
                 input = input.cuda()
                 target = target.cuda()
 
-            input_var = torch.autograd.Variable(input)
-            target_var = torch.autograd.Variable(target)
-
             # compute output
-            output = self.MODEL(input_var)
-            loss = self.CRITERION(output, target_var)
+            output = self.MODEL(input)
+            batch_loss = self.CRITERION(output, target)
 
             # measure accuracy and record loss
-            prec1 = self.accuracy(output.data, target)
-            losses.update(loss.item(), input.size(0))
-            top1.update(prec1[0], input.size(0))
+            batch_acc = self.accuracy(output.data, target)
 
-            # compute gradient and do SGD step
+            train_losses.update(batch_loss.item(), input.size(0))
+            train_accuracy.update(batch_acc, input.size(0))
+
+            # compute gradient and do optim step
             self.OPTIMIZER.zero_grad()
-            loss.backward()
+            batch_loss.backward()
             self.OPTIMIZER.step()
 
             # measure elapsed time
@@ -178,16 +169,14 @@ class TrainingHelper:
                     f'Epoch: [{epoch}][{i}/{len(self.TRAIN_DATALOADER)}]\t'
                     f'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
                     f'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
-                    f'Loss {losses.val:.4f} ({losses.avg:.4f})\t'
-                    f'Prec@1 {top1.val:.3f} ({top1.avg:.3f})\t'
-                    f'Prec@5 {top5.val:.3f} ({top5.avg:.3f})'
+                    f'Loss {train_losses.val:.4f} ({train_losses.avg:.4f})\t'
+                    f'Acc  {train_accuracy.val:.3f} ({train_accuracy.avg:.3f})'
                 )
 
     def validate(self):
 
-        losses = TrainingHelper.AverageMeter()
-        top1 = TrainingHelper.AverageMeter()
-        top5 = TrainingHelper.AverageMeter()
+        valid_losses = TrainingHelper.AverageMeter()
+        valid_accuracy = TrainingHelper.AverageMeter()
 
         # switch to evaluate mode
         self.MODEL.eval()
@@ -205,13 +194,15 @@ class TrainingHelper:
 
                 # compute output
                 output = self.MODEL(input_var)
-                loss = self.CRITERION(output, target_var)
+                batch_loss = self.CRITERION(output, target_var)
 
                 # measure accuracy and record loss
-                prec1 = self.accuracy(output.data, target)
-                losses.update(loss.item(), input.size(0))
-                top1.update(prec1[0], input.size(0))
+                batch_acc = self.accuracy(output.data, target)
 
-        print(f'Test set: AvgLoss: {losses.avg}, Accuracy: ({top1.avg})')
+                valid_losses.update(batch_loss.item(), input.size(0))
+                valid_accuracy.update(batch_acc, input.size(0))
 
-        return top1.avg
+        print(
+            f'Validation : Loss: {valid_losses.avg}, Accuracy: ({valid_accuracy.avg})')
+
+        return valid_accuracy.avg
