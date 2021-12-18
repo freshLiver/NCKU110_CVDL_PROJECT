@@ -109,7 +109,7 @@ class TrainingHelper:
         pred = torch.argmax(output, 1)
 
         # compare results and targets to calc num of correct
-        accuracy = pred.eq(target).float().sum(0).item() / target.size(0)
+        accuracy = pred.eq(target).float().sum(0) / target.size(0)
         return accuracy
 
     def adjust_learning_rate(self, epoch):
@@ -152,7 +152,7 @@ class TrainingHelper:
             batch_acc = self.accuracy(output.data, target)
 
             train_losses.update(batch_loss.item(), input.size(0))
-            train_accuracy.update(batch_acc, input.size(0))
+            train_accuracy.update(batch_acc.item(), input.size(0))
 
             # compute gradient and do optim step
             self.OPTIMIZER.zero_grad()
@@ -180,7 +180,6 @@ class TrainingHelper:
 
         # switch to evaluate mode
         self.MODEL.eval()
-
         with torch.no_grad():
             for input, target in self.VALID_DATALOADER:
 
@@ -189,20 +188,17 @@ class TrainingHelper:
                     input = input.cuda()
                     target = target.cuda()
 
-                input_var = torch.autograd.Variable(input)
-                target_var = torch.autograd.Variable(target)
-
                 # compute output
-                output = self.MODEL(input_var)
-                batch_loss = self.CRITERION(output, target_var)
+                output = self.MODEL(input)
+                batch_loss = self.CRITERION(output, target)
 
                 # measure accuracy and record loss
                 batch_acc = self.accuracy(output.data, target)
 
                 valid_losses.update(batch_loss.item(), input.size(0))
-                valid_accuracy.update(batch_acc, input.size(0))
+                valid_accuracy.update(batch_acc.item(), input.size(0))
 
         print(
-            f'Validation : Loss: {valid_losses.avg}, Accuracy: ({valid_accuracy.avg})')
+            f'Validation : Loss: {valid_losses.avg}, Acc: ({valid_accuracy.avg})')
 
         return valid_accuracy.avg
