@@ -8,3 +8,6 @@
 
 # ignore lfw dataset
 **/lfw*
+
+# python cache
+**/__pycache__
