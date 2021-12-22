@@ -1,0 +1,11 @@
+{
+    "jupyter.jupyterServerType": "local",
+    "cSpell.words": [
+        "Conv",
+        "cudnn",
+        "maxk",
+        "optim",
+        "prec",
+        "topk"
+    ]
+}
