@@ -20,7 +20,6 @@ class ImageList(Dataset):
 
     @staticmethod
     def read_list(fileList):
-        # TODO
         imgList = []
         with open(fileList, 'r') as file:
             for line in file.readlines():
@@ -151,7 +150,6 @@ class TrainingHelper:
             if torch.cuda.is_available():
                 image = image.cuda()
                 target = target.cuda()
-                self.MODEL.cuda()
 
             # compute output (return fc2, fc1 result)
             output, _ = self.MODEL(image)
@@ -197,7 +195,6 @@ class TrainingHelper:
                 if torch.cuda.is_available():
                     image = image.cuda()
                     target = target.cuda()
-                    self.MODEL.cuda()
 
                 # compute output (output fc2, fc1 result)
                 output, _ = self.MODEL(image)
