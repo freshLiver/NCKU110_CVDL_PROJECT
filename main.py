@@ -1,92 +1,115 @@
-import random
+import gdown
 import math
+import random
 from os import system
 from pathlib import Path
 
-from light_cnn import LightCNN_9Layers as LightCNN9
-from functional import TrainingHelper, ImageList
 
 import torch
-import torch.backends.cudnn as cudnn
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
+from torch.utils.tensorboard import SummaryWriter
+
+
+from functional import TrainingHelper, ImageList
+from light_cnn import LightCNN_9Layers as LightCNN
+
+
+# ----------------------------------------------------------------
 
 # training
 EPOCHS = 5
-BS = 128             # batch size
-LR = 0.0001          # learning rate
+BS = 128            # batch size
+LR = 0.001          # learning rate
 NUM_WORKER = 0
 PRINT_FREQUENCY = 10
 VALID_RATIO = 0.2
 
+LOGGER = SummaryWriter()
 
-# give me abs path
-ROOT = Path("/tmp")
-TRAIN_LIST = Path.joinpath(ROOT, "train_list.txt")
-VALID_LIST = Path.joinpath(ROOT, "valid_list.txt")
+# give me abs path as ROOT(work dir)
+ROOT = Path("/home/freshliver/Downloads")
 
-
-def get_dataset(tick_size: int = 100) -> int:
-    # download dataset
-    system(f"wget -cP {ROOT} http://vis-www.cs.umass.edu/lfw/lfw.tgz")
-
-    # extract if dir not exists
-    dataset_dir = Path(f'{ROOT}/lfw')
-    if not dataset_dir.exists():
-        system(f"tar -xf {ROOT}/lfw.tgz --directory {ROOT}")
-
-    # load data into dict
-    dataset = []
-
-    NUM_CLASSES = 0
-    for index, catdir in enumerate(dataset_dir.glob("*")):
-        # iterate each file in this dir
-        for pth in catdir.glob("*"):
-            dataset.append((pth, index))
-        NUM_CLASSES += 1
-
-        # TODO trick
-        if NUM_CLASSES == tick_size:
-            break
-
-    random.shuffle(dataset)
-
-    # split dataset
-    train_size = math.floor(len(dataset) * (1-VALID_RATIO))
-    valid_size = len(dataset) - train_size
-
-    # save to file
-    with open(TRAIN_LIST, 'w') as f:
-        for img, cat in dataset[:train_size]:
-            f.write(f'{img} {cat}\n')
-
-    with open(VALID_LIST, 'w') as f:
-        for img, cat in dataset[train_size:]:
-            f.write(f'{img} {cat}\n')
-
-    return NUM_CLASSES
+# dataset paths
+DATA_SRC = "https://drive.google.com/uc?id=11KFpKd8i8r1nES1AmSminorvRivB2M8_"
+DATA_DST = ROOT.joinpath("vggface2-test.zip")
+DATA_DIR = ROOT.joinpath("vggface2")
 
 
-if __name__ == "__main__":
+DATA_LIST = ROOT.joinpath("list.txt")
+TRAIN_LIST = ROOT.joinpath("train_list.txt")
+VALID_LIST = ROOT.joinpath("valid_list.txt")
 
-    NUM_CLASSES = get_dataset(100)
-    model = LightCNN9(num_classes=NUM_CLASSES)
+# ! DOWNLOAD DATASET
+
+# # download dataset
+# gdown.download(str(DATA_SRC), str(DATA_DST), False)
+
+# # extract if dir not exists
+# if not DATA_DIR.exists():
+#     system(f"unzip -d {DATA_DIR} {DATA_DST}")
+
+# ----------------------------------------------------------------
+
+# load data into dict
+image_list = []
+
+NUM_CLASSES = 0
+for index, subdir in enumerate(DATA_DIR.glob("*")):
+    # iterate each file in this dir
+    for imgPath in subdir.glob("*"):
+        image_list.append((Path.relative_to(imgPath, ROOT), index))
+    NUM_CLASSES += 1
+
+random.shuffle(image_list)
+
+# split dataset into train and validation dateset
+train_size = math.floor(len(image_list) * (1-VALID_RATIO))
+valid_size = len(image_list) - train_size
+
+
+# ----------------------------------------------------------------
+
+# save to file
+with open(TRAIN_LIST, 'w') as f:
+    for img, cat in image_list[:train_size]:
+        f.write(f'{img} {cat}\n')
+
+with open(VALID_LIST, 'w') as f:
+    for img, cat in image_list[train_size:]:
+        f.write(f'{img} {cat}\n')
+
+
+# ----------------------------------------------------------------
+
+if __name__=='__main__':
+
+    # ----------------------------------------------------------------
+
+    model = LightCNN(num_classes=NUM_CLASSES)
 
     # large lr for last fc parameters
     if torch.cuda.is_available():
         model = model.cuda()
 
+    print(model)
+
+    # ----------------------------------------------------------------
+
     # define transforms
     train_transform = transforms.Compose([
-        transforms.RandomCrop(224),
+        transforms.Resize(128),
+        transforms.RandomCrop(128),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
     ])
 
     valid_transform = transforms.Compose([
-        transforms.CenterCrop(224),
+        transforms.Resize(128),
+        transforms.CenterCrop(128),
         transforms.ToTensor(),
     ])
+
 
     # create data loaders
     train_loader = DataLoader(
@@ -105,6 +128,8 @@ if __name__ == "__main__":
         pin_memory=True
     )
 
+    # ----------------------------------------------------------------
+
     helper = TrainingHelper(
         train_dataloader=train_loader,
         valid_dataloader=valid_loader,
@@ -117,15 +142,27 @@ if __name__ == "__main__":
         optimizer=torch.optim.Adam(params=model.parameters(), lr=LR)
     )
 
-    cudnn.benchmark = True
-
-    helper.validate()
-    for epoch in range(0, EPOCHS):
-
-        helper.adjust_learning_rate(epoch)
+    for iEpoch in range(0, EPOCHS):
 
         # train for one epoch
-        helper.train(epoch)
+        train_loss, train_acc = helper.train(iEpoch)
 
         # evaluate on validation set
-        prec1 = helper.validate()
+        valid_loss, valid_acc = helper.validate(iEpoch)
+
+        # log tensorboard
+        LOGGER.add_scalar('train/loss', train_loss, iEpoch)
+        LOGGER.add_scalar('train/accuracy', train_acc, iEpoch)
+        LOGGER.add_scalar('valid/loss', valid_loss, iEpoch)
+        LOGGER.add_scalar('valid/accuracy', valid_acc, iEpoch)
+
+    # Testing
+    helper.VALID_DATALOADER = valid_loader
+    helper.validate(iEpoch, mode='test')
+
+    
+    # ----------------------------------------------------------------
+
+    # TODO
+
+    
