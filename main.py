@@ -52,37 +52,41 @@ VALID_LIST = ROOT.joinpath("valid_list.txt")
 # ----------------------------------------------------------------
 
 # load data into dict
-image_list = []
+train_data = []
+valid_data = []
+
 
 NUM_CLASSES = 0
 for index, subdir in enumerate(DATA_DIR.glob("*")):
+
     # iterate each file in this dir
+    image_list = []
     for imgPath in subdir.glob("*"):
         image_list.append((Path.relative_to(imgPath, ROOT), index))
+
+    # split into train, validation list
+    tSize = math.floor(len(image_list)*(1-VALID_RATIO))
+
+    train_data += image_list[:tSize]
+    valid_data += image_list[tSize:]
+
+    # count class
     NUM_CLASSES += 1
 
-random.shuffle(image_list)
-
-# split dataset into train and validation dateset
-train_size = math.floor(len(image_list) * (1-VALID_RATIO))
-valid_size = len(image_list) - train_size
-
-
-# ----------------------------------------------------------------
 
 # save to file
 with open(TRAIN_LIST, 'w') as f:
-    for img, cat in image_list[:train_size]:
+    for img, cat in train_data:
         f.write(f'{img} {cat}\n')
 
 with open(VALID_LIST, 'w') as f:
-    for img, cat in image_list[train_size:]:
+    for img, cat in valid_data:
         f.write(f'{img} {cat}\n')
 
 
 # ----------------------------------------------------------------
 
-if __name__=='__main__':
+if __name__ == '__main__':
 
     # ----------------------------------------------------------------
 
@@ -109,7 +113,6 @@ if __name__=='__main__':
         transforms.CenterCrop(128),
         transforms.ToTensor(),
     ])
-
 
     # create data loaders
     train_loader = DataLoader(
@@ -160,9 +163,6 @@ if __name__=='__main__':
     helper.VALID_DATALOADER = valid_loader
     helper.validate(iEpoch, mode='test')
 
-    
     # ----------------------------------------------------------------
 
     # TODO
-
-    
