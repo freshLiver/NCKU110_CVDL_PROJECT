@@ -6,6 +6,10 @@
 **/*.jpg
 **/*.jpeg
 
+!results/*.png
+!results/*.jpg
+!results/*.jpeg
+
 # ignore lfw dataset
 **/lfw*
 
