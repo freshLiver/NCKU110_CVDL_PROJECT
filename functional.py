@@ -86,7 +86,7 @@ class TrainingHelper:
         self.BS = batch_size
         self.LR = learning_rate
 
-        self.MODEL = model
+        self.MODEL = model.cuda() if torch.cuda.is_available() else model
         self.CRITERION = criterion
         self.OPTIMIZER = optimizer
 
