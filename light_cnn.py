@@ -51,10 +51,9 @@ class resblock(nn.Module):
                                    kernel_size=3, stride=1, padding=1)
 
     def forward(self, x):
-        res = x
         out = self.conv1(x)
         out = self.conv2(out)
-        out = out + res
+        out += x
         return out
 
 
@@ -113,17 +112,17 @@ class network_29layers(nn.Module):
         x = self.conv1(x)
         x = self.pool1(x)
 
-        #x = self.block1(x)
+        x = self.block1(x)
         x = self.group1(x)
         x = self.pool2(x)
 
-        #x = self.block2(x)
+        x = self.block2(x)
         x = self.group2(x)
         x = self.pool3(x)
 
-        #x = self.block3(x)
+        x = self.block3(x)
         x = self.group3(x)
-        #x = self.block4(x)
+        x = self.block4(x)
         x = self.group4(x)
         x = self.pool4(x)
 
