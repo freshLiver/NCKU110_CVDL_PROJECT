@@ -1,4 +1,5 @@
 import time
+from typing import List, Dict
 from PIL import Image
 from pathlib import Path
 
@@ -47,6 +48,20 @@ class ImageList(Dataset):
 
 class TrainingHelper:
 
+    class Logger():
+
+        def __init__(self) -> None:
+            self.train_losses: List = []
+            self.train_accuracies: List = []
+            self.valid_losses: List = []
+            self.valid_accuracies: List = []
+
+        def push_log(self, train_loss: float, train_acc: float, valid_loss: float, valid_acc: float) -> None:
+            self.train_losses.append(train_loss)
+            self.train_accuracies.append(train_acc)
+            self.valid_losses.append(valid_loss)
+            self.valid_accuracies.append(valid_acc)
+
     class AverageMeter(object):
         def __init__(self):
             self.reset()
@@ -91,6 +106,8 @@ class TrainingHelper:
         self.OPTIMIZER = optimizer
 
         self.PRINT_FREQUENCY = print_frequency
+
+        self.LOGGER = TrainingHelper.Logger()
 
     @staticmethod
     def accuracy(model_output, labels):
