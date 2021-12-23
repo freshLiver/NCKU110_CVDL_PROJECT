@@ -6,6 +6,8 @@
         "maxk",
         "optim",
         "prec",
-        "topk"
+        "topk",
+        "xlabel",
+        "ylabel"
     ]
 }

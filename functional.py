@@ -1,7 +1,10 @@
 import time
+import json
 from typing import List, Dict
 from PIL import Image
 from pathlib import Path
+
+from matplotlib import pyplot as plt
 
 import torch
 from torch.utils.data import DataLoader, Dataset
@@ -56,11 +59,43 @@ class TrainingHelper:
             self.valid_losses: List = []
             self.valid_accuracies: List = []
 
-        def push_log(self, train_loss: float, train_acc: float, valid_loss: float, valid_acc: float) -> None:
+        def push(self, train_loss: float, train_acc: float, valid_loss: float, valid_acc: float) -> None:
             self.train_losses.append(train_loss)
             self.train_accuracies.append(train_acc)
             self.valid_losses.append(valid_loss)
             self.valid_accuracies.append(valid_acc)
+
+        def visualize(self, init_epoch=0):
+            # set x points
+            pts = list(range(init_epoch, EPOCHS))
+
+            # draw loss graph
+            plt.figure(1)
+            plt.plot(pts, self.train_losses, pts, self.valid_losses)
+            plt.title('Training & Validation Loss')
+            plt.xlabel('Epoch')
+            plt.ylabel('Loss')
+            plt.legend(['Training', 'Validation'])
+            plt.show()
+
+            # draw accuracy graph
+            plt.figure(2)
+            plt.plot(pts, self.train_accuracies, pts, self.valid_accuracies)
+            plt.title('Training & Validation Accuracy')
+            plt.xlabel('Epoch')
+            plt.ylabel('Accuracy')
+            plt.legend(['Training', 'Validation'])
+            plt.show()
+
+        def save(self, dst: str):
+            with open(dst, 'w') as out:
+                train_log = {
+                    'train_losses': self.train_losses,
+                    "train_accuracies": self.train_accuracies,
+                    "valid_losses": self.valid_losses,
+                    "valid_accuracies": self.valid_accuracies
+                }
+                json.dump(train_log, out, ensure_ascii=False, indent=2)
 
     class AverageMeter(object):
         def __init__(self):
