@@ -113,17 +113,17 @@ class network_29layers(nn.Module):
         x = self.conv1(x)
         x = self.pool1(x)
 
-        x = self.block1(x)
+        #x = self.block1(x)
         x = self.group1(x)
         x = self.pool2(x)
 
-        x = self.block2(x)
+        #x = self.block2(x)
         x = self.group2(x)
         x = self.pool3(x)
 
-        x = self.block3(x)
+        #x = self.block3(x)
         x = self.group3(x)
-        x = self.block4(x)
+        #x = self.block4(x)
         x = self.group4(x)
         x = self.pool4(x)
 
