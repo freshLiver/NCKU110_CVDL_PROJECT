@@ -50,15 +50,14 @@ class resblock(nn.Module):
         self.conv2 = MaxFeatureMap(in_channels, out_channels,
                                    kernel_size=3, stride=1, padding=1)
         self.conv3 = nn.Sequential(
-            nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
+            nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=1, padding=1)
         )
 
     def forward(self, x):
         out = self.conv1(x)
         out = self.conv2(out)
-        x = self.conv3(x)
         out += x
+        out = F.relu(out)
         return out
 
 
