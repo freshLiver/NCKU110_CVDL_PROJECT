@@ -33,7 +33,7 @@ class ImageList(Dataset):
         imgPath, target = self.imgList[index]
 
         # read as grayscale image
-        img = Image.open(self.root.joinpath(imgPath)).convert('L')
+        img = Image.open(self.root.joinpath(imgPath))
 
         # apply transform in exists
         img = self.transform(img) if self.transform else img
@@ -152,7 +152,7 @@ class TrainingHelper:
                 target = target.cuda()
 
             # compute output (return fc2, fc1 result)
-            output, _ = self.MODEL(image)
+            output = self.MODEL(image)
             loss = self.CRITERION(output, target)
 
             # measure accuracy and record loss
@@ -197,7 +197,7 @@ class TrainingHelper:
                     target = target.cuda()
 
                 # compute output (output fc2, fc1 result)
-                output, _ = self.MODEL(image)
+                output = self.MODEL(image)
                 loss = self.CRITERION(output, target)
 
                 # measure accuracy and record loss
