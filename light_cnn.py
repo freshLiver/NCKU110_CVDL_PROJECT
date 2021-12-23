@@ -57,7 +57,7 @@ class resblock(nn.Module):
         out = self.conv1(x)
         out = self.conv2(out)
         out += x
-        out = F.relu(out)
+        out = F.leaky_relu(out)
         return out
 
 
