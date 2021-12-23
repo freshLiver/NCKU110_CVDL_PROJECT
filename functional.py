@@ -54,20 +54,27 @@ class TrainingHelper:
     class Logger():
 
         def __init__(self) -> None:
+            self.epochs = 0
             self.train_losses: List = []
             self.train_accuracies: List = []
             self.valid_losses: List = []
             self.valid_accuracies: List = []
 
         def push(self, train_loss: float, train_acc: float, valid_loss: float, valid_acc: float) -> None:
+            self.epochs += 1
             self.train_losses.append(train_loss)
             self.train_accuracies.append(train_acc)
             self.valid_losses.append(valid_loss)
             self.valid_accuracies.append(valid_acc)
 
-        def visualize(self, init_epoch=0):
+        def visualize(self,
+                      init_epoch=0,
+                      loss_dst: str = None,        # save loss figure to this path
+                      accuracy_dst: str = None     # save accuracy figure to this path
+                      ) -> None:
+
             # set x points
-            pts = list(range(init_epoch, EPOCHS))
+            pts = list(range(init_epoch, self.epochs))
 
             # draw loss graph
             plt.figure(1)
@@ -78,6 +85,9 @@ class TrainingHelper:
             plt.legend(['Training', 'Validation'])
             plt.show()
 
+            if loss_dst is not None:
+                plt.savefig(loss_dst)
+
             # draw accuracy graph
             plt.figure(2)
             plt.plot(pts, self.train_accuracies, pts, self.valid_accuracies)
@@ -86,6 +96,9 @@ class TrainingHelper:
             plt.ylabel('Accuracy')
             plt.legend(['Training', 'Validation'])
             plt.show()
+
+            if accuracy_dst is not None:
+                plt.savefig(accuracy_dst)
 
         def save(self, dst: str):
             with open(dst, 'w') as out:
@@ -130,6 +143,8 @@ class TrainingHelper:
         # train and valid data
         self.TRAIN_DATALOADER = train_dataloader
         self.VALID_DATALOADER = valid_dataloader
+
+        # TODO add class label mapping
 
         # assign hyper-parameteres
         self.EPOCHS = epochs
