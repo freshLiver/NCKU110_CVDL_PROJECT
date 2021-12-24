@@ -49,15 +49,13 @@ class resblock(nn.Module):
                                    kernel_size=3, stride=1, padding=1)
         self.conv2 = MaxFeatureMap(in_channels, out_channels,
                                    kernel_size=3, stride=1, padding=1)
-        self.conv3 = nn.Sequential(
-            nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=1, padding=1)
-        )
+        self.batchnorm1 = nn.BatchNorm2d(out_channels)
 
     def forward(self, x):
         out = self.conv1(x)
         out = self.conv2(out)
+        out = self.batchnorm1(out)
         out += x
-        out = F.leaky_relu(out)
         return out
 
 
