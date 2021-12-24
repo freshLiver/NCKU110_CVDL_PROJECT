@@ -172,8 +172,6 @@ class TrainingHelper:
             output, _ = self.MODEL(image)
             loss = self.CRITERION(output, target)
 
-            print(loss)
-
             # measure accuracy and record loss
             acc = self.accuracy(output.data, target)
 
