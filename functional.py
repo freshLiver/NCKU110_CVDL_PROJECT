@@ -77,7 +77,7 @@ class TrainingHelper:
             pts = list(range(init_epoch, self.epochs))
 
             # draw loss graph
-            plt.figure(1)
+            loss_fig = plt.figure(1)
             plt.plot(pts, self.train_losses, pts, self.valid_losses)
             plt.title('Training & Validation Loss')
             plt.xlabel('Epoch')
@@ -86,10 +86,10 @@ class TrainingHelper:
             plt.show()
 
             if loss_dst is not None:
-                plt.savefig(loss_dst)
+                loss_fig.savefig(loss_dst)
 
             # draw accuracy graph
-            plt.figure(2)
+            acc_fig = plt.figure(2)
             plt.plot(pts, self.train_accuracies, pts, self.valid_accuracies)
             plt.title('Training & Validation Accuracy')
             plt.xlabel('Epoch')
@@ -98,7 +98,7 @@ class TrainingHelper:
             plt.show()
 
             if accuracy_dst is not None:
-                plt.savefig(accuracy_dst)
+                acc_fig.savefig(accuracy_dst)
 
         def save(self, dst: str):
             with open(dst, 'w') as out:
@@ -137,7 +137,9 @@ class TrainingHelper:
                  print_frequency: int,
                  model: torch.nn.Module,
                  criterion,
-                 optimizer
+                 optimizer,
+
+                 class_mapping: dict = None,
                  ) -> None:
 
         # train and valid data
@@ -156,6 +158,9 @@ class TrainingHelper:
         self.OPTIMIZER = optimizer
 
         self.PRINT_FREQUENCY = print_frequency
+
+        # optional
+        self.CLASS_MAPPING = class_mapping
 
         self.LOGGER = TrainingHelper.Logger()
 
