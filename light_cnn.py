@@ -35,10 +35,12 @@ class group(nn.Module):
         self.conv_a = MaxFeatureMap(in_channels, in_channels, 1, 1, 0)
         self.conv = MaxFeatureMap(in_channels, out_channels,
                                   kernel_size, stride, padding)
+        self.batchNorm = nn.BatchNorm2d(out_channels)
 
     def forward(self, x):
         x = self.conv_a(x)
         x = self.conv(x)
+        x = self.batchNorm(x)
         return x
 
 
