@@ -35,12 +35,10 @@ class group(nn.Module):
         self.conv_a = MaxFeatureMap(in_channels, in_channels, 1, 1, 0)
         self.conv = MaxFeatureMap(in_channels, out_channels,
                                   kernel_size, stride, padding)
-        self.batchNorm = nn.BatchNorm2d(out_channels)
 
     def forward(self, x):
         x = self.conv_a(x)
         x = self.conv(x)
-        x = self.batchNorm(x)
         return x
 
 
@@ -51,10 +49,12 @@ class resblock(nn.Module):
                                    kernel_size=3, stride=1, padding=1)
         self.conv2 = MaxFeatureMap(in_channels, out_channels,
                                    kernel_size=3, stride=1, padding=1)
+        self.batch = nn.BatchNorm2d(out_channels)
 
     def forward(self, x):
         out = self.conv1(x)
         out = self.conv2(out)
+        out = self.batch(out)
         out += x
         out = F.leaky_relu(out)
         return out
