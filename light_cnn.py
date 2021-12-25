@@ -25,7 +25,7 @@ class MaxFeatureMap(nn.Module):
 
     def forward(self, x):
         x = self.filter(x)
-        out = torch.split(x, self.out_channels, 1)
+        out = torch.split(x, self.out_channels, 3)
         return torch.max(out[0], out[1])
 
 
