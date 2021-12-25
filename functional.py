@@ -146,7 +146,6 @@ class TrainingHelper:
         self.TRAIN_DATALOADER = train_dataloader
         self.VALID_DATALOADER = valid_dataloader
 
-        # TODO add class label mapping
 
         # assign hyper-parameteres
         self.EPOCHS = epochs
@@ -160,6 +159,7 @@ class TrainingHelper:
         self.PRINT_FREQUENCY = print_frequency
 
         # optional
+        # class label mapping
         self.CLASS_MAPPING = class_mapping
 
         self.LOGGER = TrainingHelper.Logger()
