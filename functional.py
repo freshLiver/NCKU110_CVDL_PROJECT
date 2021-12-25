@@ -25,6 +25,10 @@ class ImageList(Dataset):
         self.imgList: Path = self.read_list(fileList)
         self.transform = transform
 
+        # DOI: 10.1109/ICCES48960.2019.9068182
+        self.lower = np.array([0, 0, 133])
+        self.upper = np.array([173, 197, 175])
+
     @staticmethod
     def read_list(fileList):
         imgList = []
@@ -40,9 +44,15 @@ class ImageList(Dataset):
         imgPath, target = self.imgList[index]
 
         # read as grayscale image
-        img = Image.open(str(self.root.joinpath(imgPath))).convert('HSV')
+        bgrImage = cv2.imread(str(self.root.joinpath(imgPath)), cv2.IMREAD_COLOR)
+
+        hsvImage = cv2.cvtColor(bgrImage, cv2.COLOR_BGR2HSV)
+
+        mask = cv2.inRange(hsvImage, self.lower, self.upper)
+        masked = cv2.bitwise_and(hsvImage, hsvImage, mask=mask)
 
         # apply transform in exists
+        img = Image.fromarray(masked)
         img = self.transform(img) if self.transform else img
 
         # return result
