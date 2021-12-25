@@ -89,23 +89,21 @@ class network_9layers(nn.Module):
 class network_29layers(nn.Module):
     def __init__(self, block, layers, num_classes):
         super(network_29layers, self).__init__()
-        self.conv1 = MaxFeatureMap(3, 64, 5, 1, 2)
+        self.conv1 = MaxFeatureMap(1, 48, 5, 1, 2)
         self.pool1 = nn.MaxPool2d(kernel_size=2, stride=2, ceil_mode=True)
-        self.block1 = self._make_layer(block, layers[0], 64, 64)
-        self.group1 = group(64, 128, 3, 1, 1)
+        self.block1 = self._make_layer(block, layers[0], 48, 48)
+        self.group1 = group(48, 96, 3, 1, 1)
         self.pool2 = nn.MaxPool2d(kernel_size=2, stride=2, ceil_mode=True)
-        self.block2 = self._make_layer(block, layers[1], 128, 128)
-        self.group2 = group(128, 256, 3, 1, 1)
+        self.block2 = self._make_layer(block, layers[1], 96, 96)
+        self.group2 = group(96, 192, 3, 1, 1)
         self.pool3 = nn.MaxPool2d(kernel_size=2, stride=2, ceil_mode=True)
-        self.block3 = self._make_layer(block, layers[2], 256, 256)
-        self.group3 = group(256, 128, 3, 1, 1)
+        self.block3 = self._make_layer(block, layers[2], 192, 192)
+        self.group3 = group(192, 128, 3, 1, 1)
         self.block4 = self._make_layer(block, layers[3], 128, 128)
         self.group4 = group(128, 128, 3, 1, 1)
         self.pool4 = nn.MaxPool2d(kernel_size=2, stride=2, ceil_mode=True)
-        self.avg = nn.AvgPool2d(kernel_size=8)
         self.fc = MaxFeatureMap(8*8*128, 256, type=0)
         self.fc2 = nn.Linear(256, num_classes)
-        self.fct = nn.Linear(128, num_classes)
 
     def _make_layer(self, block, num_blocks, in_channels, out_channels):
         layers = []
@@ -130,12 +128,12 @@ class network_29layers(nn.Module):
         x = self.block4(x)
         x = self.group4(x)
         x = self.pool4(x)
-        x = self.avg(x)
+
         x = x.view(x.size(0), -1)
-        #fc = self.fc(x)
-        #fc = F.dropout(fc, training=self.training)
-        out = self.fct(x)
-        return out, x
+        fc = self.fc(x)
+        fc = F.dropout(fc, training=self.training)
+        out = self.fc2(fc)
+        return out, fc
 
 
 class network_29layers_v2(nn.Module):
