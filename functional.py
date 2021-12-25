@@ -34,7 +34,7 @@ class ImageList(Dataset):
         imgPath, target = self.imgList[index]
 
         # read as grayscale image
-        img = Image.open(self.root.joinpath(imgPath)).convert('RGB')
+        img = Image.open(self.root.joinpath(imgPath)).convert('L')
 
         # apply transform in exists
         img = self.transform(img) if self.transform else img
