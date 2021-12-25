@@ -56,6 +56,7 @@ class resblock(nn.Module):
         out = self.conv2(out)
         out = self.batch(out)
         out += x
+        out = F.leaky_relu(out)
         return out
 
 
