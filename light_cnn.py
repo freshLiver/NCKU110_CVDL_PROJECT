@@ -62,7 +62,7 @@ class network_9layers(nn.Module):
     def __init__(self, num_classes):
         super(network_9layers, self).__init__()
         self.features = nn.Sequential(
-            MaxFeatureMap(1, 48, 5, 1, 2),
+            MaxFeatureMap(3, 48, 5, 1, 2),
             nn.MaxPool2d(kernel_size=2, stride=2, ceil_mode=True),
             group(48, 96, 3, 1, 1),
             nn.MaxPool2d(kernel_size=2, stride=2, ceil_mode=True),
