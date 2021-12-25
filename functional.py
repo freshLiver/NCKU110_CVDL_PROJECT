@@ -1,3 +1,4 @@
+import cv2
 import time
 import json
 from typing import List, Dict
@@ -37,7 +38,11 @@ class ImageList(Dataset):
         imgPath, target = self.imgList[index]
 
         # read as grayscale image
-        img = Image.open(self.root.joinpath(imgPath)).convert('RGB')
+        cvImage = cv2.imread(str(self.root.joinpath(imgPath)), cv2.IMREAD_COLOR)
+
+        # cv image is bgr -> pil image is rgb
+        hsvImage = cv2.cvtColor(cvImage, cv2.COLOR_BGR2HSV)
+        img = Image.fromarray(hsvImage)
 
         # apply transform in exists
         img = self.transform(img) if self.transform else img
@@ -145,7 +150,6 @@ class TrainingHelper:
         # train and valid data
         self.TRAIN_DATALOADER = train_dataloader
         self.VALID_DATALOADER = valid_dataloader
-
 
         # assign hyper-parameteres
         self.EPOCHS = epochs
