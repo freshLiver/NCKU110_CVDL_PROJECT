@@ -62,21 +62,18 @@ class maxout_fm(nn.Module):
         super(maxout_fm, self).__init__()
         self.out_channels = out_channels
         self.filter_split = nn.Conv2d(in_channels, out_channels * 2, kernel_size=kernel_size, stride=stride, padding=padding)
-        self.filter_out_0 = nn.Conv2d(out_channels, out_channels, kernel_size=kernel_size, stride=stride, padding=padding)
-        self.filter_out_1 = nn.Conv2d(out_channels, out_channels, kernel_size=kernel_size, stride=stride, padding=padding)
-        self.batchNorm_0 = nn.BatchNorm2d(out_channels)
-        self.batchNorm_1 = nn.BatchNorm2d(out_channels)
-        self.leaky = nn.LeakyReLU(0.1)
+        self.filter_halfs = [nn.Conv2d(out_channels, out_channels, kernel_size=kernel_size, kernel_size=kernel_size, stride=stride, padding=padding) for i in range(2)]
+        self.batch_norms = [nn.BatchNorm2d(out_channels) for i in range(2)]
+        self.leaky = nn.LeakyReLU()
 
     def forward(self, input):
         input = self.filter_split(input)
         output = list(torch.split(input, self.out_channels, 1))
-        output[0] = self.filter_out_0(output[0])
-        output[0] = self.leaky(output[0])
-        output_1 = output[1] + output[0]
-        output_1 = self.filter_out_1(output_1)
-        output_1 = self.leaky(output_1)
-        return torch.max(output[0], output_1)
+        for i in range(2):
+            output[i] = self.filter_halfs[i](output[i])
+            output[i] = self.batch_norms[i](output[i])
+            output[i] = self.leaky(output[i])
+        return torch.max(output[0], output[1])
 
 
 class network_test(nn.Module):
