@@ -26,8 +26,8 @@ class ImageList(Dataset):
         self.transform = transform
 
         # DOI: 10.1109/ICCES48960.2019.9068182
-        # self.lower = np.array([0, 0, 133])
-        # self.upper = np.array([173, 197, 175])
+        self.lower = np.array([0, 0, 133])
+        self.upper = np.array([173, 197, 175])
 
     @staticmethod
     def read_list(fileList):
@@ -44,35 +44,18 @@ class ImageList(Dataset):
         imgPath, target = self.imgList[index]
 
         # read as grayscale image
-        origin = cv2.imread(str(self.root.joinpath(imgPath)), cv2.IMREAD_GRAYSCALE)
-        normalized = cv2.normalize(origin, None, 0, 255, cv2.NORM_MINMAX)
+        img = Image.open(str(self.root.joinpath(imgPath))).convert("L")
 
-        # cannied1 = cv2.Canny(normalized, 100, 100)
-        cannied = cv2.Canny(normalized, 125, 125)
 
-        # plt.figure(0)
-        # plt.imshow(Image.fromarray(origin))
-        # plt.show()
-        # plt.figure(1)
-        # plt.imshow(Image.fromarray(normalized))
-        # plt.show()
 
-        # plt.figure(2)
-        # plt.show()
-        # plt.figure(3)
-        # plt.imshow(Image.fromarray(cannied1))
-        # plt.imshow(Image.fromarray(cannied2))
-        # plt.show()
+        #hsvImage = cv2.cvtColor(bgrImage, cv2.COLOR_BGR2HSV)
+
+        #mask = cv2.inRange(hsvImage, self.lower, self.upper)
+        #masked = cv2.bitwise_and(hsvImage, hsvImage, mask=mask)
 
         # apply transform in exists
-        originPIL = Image.fromarray(origin)
-        originPIL = self.transform(originPIL) if self.transform else originPIL
-
-        canniedPIL = Image.fromarray(cannied)
-        canniedPIL = self.transform(canniedPIL) if self.transform else canniedPIL
-
-        img = np.vstack((originPIL, canniedPIL))
-        # raise RuntimeError()
+        #img = Image.fromarray(masked)
+        img = self.transform(img) if self.transform else img
 
         # return result
         return img, target

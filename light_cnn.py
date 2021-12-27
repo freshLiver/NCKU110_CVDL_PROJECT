@@ -69,7 +69,7 @@ class maxout_fm(nn.Module):
 
     def forward(self, input):
         input = self.filter_split(input)
-        output = torch.split(input, self.out_channels, 1)
+        output = list(torch.split(input, self.out_channels, 1))
         output[0] = self.filter_out_0(output[0])
         output[0] = F.leaky_relu(self.batchNorm_0(output[0]))
         output[1] += output[0]
@@ -93,7 +93,7 @@ class network_9layers(nn.Module):
     def __init__(self, num_classes):
         super(network_9layers, self).__init__()
         self.features = nn.Sequential(
-            maxout_fm(2, 48, 5, 1, 2),
+            maxout_fm(1, 48, 5, 1, 2),
             nn.MaxPool2d(kernel_size=2, stride=2, ceil_mode=True),
             group(48, 96, 3, 1, 1),
             nn.MaxPool2d(kernel_size=2, stride=2, ceil_mode=True),
