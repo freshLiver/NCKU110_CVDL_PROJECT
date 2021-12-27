@@ -32,8 +32,8 @@ class MaxFeatureMap(nn.Module):
 class group(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, stride, padding):
         super(group, self).__init__()
-        self.conv_a = MaxFeatureMap(in_channels, in_channels, 1, 1, 0)
-        self.conv = MaxFeatureMap(in_channels, out_channels,
+        self.conv_a = maxout_fm(in_channels, in_channels, 1, 1, 0)
+        self.conv = maxout_fm(in_channels, out_channels,
                                   kernel_size, stride, padding)
 
     def forward(self, x):
@@ -57,12 +57,43 @@ class resblock(nn.Module):
         out = out + res
         return out
 
+class maxout_fm(nn.Module):
+    def __init__(self, in_channels, out_channels, kernel_size=3, stride=1, padding=1):
+        super(maxout_fm, self).__init__()
+        self.out_channels = out_channels
+        self.filter_split = nn.Conv2d(in_channels, out_channels * 2, kernel_size=kernel_size, stride=stride, padding=padding)
+        self.filter_out_0 = nn.Conv2d(out_channels, out_channels, kernel_size=kernel_size, stride=stride, padding=padding)
+        self.filter_out_1 = nn.Conv2d(out_channels, out_channels, kernel_size=kernel_size, stride=stride, padding=padding)
+        self.batchNorm_0 = nn.BatchNorm2d(out_channels)
+        self.batchNorm_1 = nn.BatchNorm2d(out_channels)
+
+    def forward(self, input):
+        input = self.filter_split(input)
+        output = torch.split(input, self.out_channels, 1)
+        output[0] = self.filter_out_0(output[0])
+        output[0] = F.leaky_relu(self.batchNorm_0(output[0]))
+        output[1] += output[0]
+        output[1] = self.filter_out_1(output[1])
+        output[1] = F.leaky_relu(self.batchNorm_1(output[1]))
+        return torch.max(output[0], output[1])
+
+
+class network_test(nn.Module):
+    def __init__(self, num_classes):
+        super(network_test, self).__init__()
+        self.features = nn.Sequential(
+            
+        )
+    def forward(self, input):
+        output = input
+        return output
+
 
 class network_9layers(nn.Module):
     def __init__(self, num_classes):
         super(network_9layers, self).__init__()
         self.features = nn.Sequential(
-            MaxFeatureMap(2, 48, 5, 1, 2),
+            maxout_fm(2, 48, 5, 1, 2),
             nn.MaxPool2d(kernel_size=2, stride=2, ceil_mode=True),
             group(48, 96, 3, 1, 1),
             nn.MaxPool2d(kernel_size=2, stride=2, ceil_mode=True),
