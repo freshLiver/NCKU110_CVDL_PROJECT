@@ -3,6 +3,10 @@
     "cSpell.words": [
         "Conv",
         "cudnn",
+        "imload",
+        "IMREAD",
+        "imshow",
+        "imwrite",
         "maxk",
         "optim",
         "prec",

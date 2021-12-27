@@ -42,8 +42,6 @@ class ImageList(Dataset):
         img = Image.open(str(self.root.joinpath(imgPath))).convert("L")
         img = self.transform(img) if self.transform is not None else img
 
-        # raise RuntimeError()
-
         # return result
         return img, target
 
