@@ -66,15 +66,18 @@ class maxout_fm(nn.Module):
         self.filter_out_1 = nn.Conv2d(out_channels, out_channels, kernel_size=kernel_size, stride=stride, padding=padding)
         self.batchNorm_0 = nn.BatchNorm2d(out_channels)
         self.batchNorm_1 = nn.BatchNorm2d(out_channels)
+        self.leaky = nn.LeakyReLU(0.1)
 
     def forward(self, input):
         input = self.filter_split(input)
         output = list(torch.split(input, self.out_channels, 1))
         output[0] = self.filter_out_0(output[0])
-        output[0] = F.leaky_relu(self.batchNorm_0(output[0]))
+        output[0] = self.batchNorm_0(output[0])
+        output[0] = self.leaky(output[0])
         output[1] += output[0]
         output[1] = self.filter_out_1(output[1])
-        output[1] = F.leaky_relu(self.batchNorm_1(output[1]))
+        output[1] = self.batchNorm_1(output[1])
+        output[1] = self.leaky(output[1])
         return torch.max(output[0], output[1])
 
 
