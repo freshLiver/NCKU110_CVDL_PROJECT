@@ -62,7 +62,7 @@ class maxout_fm(nn.Module):
         super(maxout_fm, self).__init__()
         self.out_channels = out_channels
         self.filter_split = nn.Conv2d(in_channels, out_channels * 2, kernel_size=kernel_size, stride=stride, padding=padding)
-        self.filter_halfs = [nn.Conv2d(out_channels, out_channels, kernel_size=kernel_size, kernel_size=kernel_size, stride=stride, padding=padding) for i in range(2)]
+        self.filter_halfs = [nn.Conv2d(out_channels, out_channels, kernel_size=kernel_size, stride=stride, padding=padding) for i in range(2)]
         self.batch_norms = [nn.BatchNorm2d(out_channels) for i in range(2)]
         self.leaky = nn.LeakyReLU()
 
