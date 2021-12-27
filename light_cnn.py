@@ -62,7 +62,7 @@ class maxout_fm(nn.Module):
         super(maxout_fm, self).__init__()
         self.out_channels = out_channels
         self.filter_split = nn.Conv2d(in_channels, out_channels * 2, kernel_size=kernel_size, stride=stride, padding=padding)
-        self.filter_halfs = nn.ModuleList([nn.Conv2d(out_channels, out_channels, kernel_size=kernel_size, stride=stride, padding=padding) for i in range(2)])
+        self.filter_halfs = nn.ModuleList([nn.Conv2d(out_channels, out_channels * 2, kernel_size=kernel_size, stride=stride, padding=padding) for i in range(2)])
         self.batch_norms = nn.ModuleList([nn.BatchNorm2d(out_channels) for i in range(2)])
         self.leaky = nn.LeakyReLU()
 
@@ -73,7 +73,7 @@ class maxout_fm(nn.Module):
             output[i] = self.filter_halfs[i](output[i])
             output[i] = self.batch_norms[i](output[i])
             output[i] = self.leaky(output[i])
-        return torch.max(output[0], output[1])
+        return output[0] + output[1]
 
 
 class network_test(nn.Module):
