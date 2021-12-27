@@ -72,7 +72,7 @@ class network_9layers(nn.Module):
             group(128, 128, 3, 1, 1),
             nn.MaxPool2d(kernel_size=2, stride=2, ceil_mode=True),
         )
-        self.fc1 = MaxFeatureMap(14*14*128, 256, type=0)
+        self.fc1 = MaxFeatureMap(8*8*128, 256, type=0)
         self.fc2 = nn.Linear(256, num_classes)
 
     def forward(self, x):
