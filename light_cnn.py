@@ -74,11 +74,11 @@ class maxout_fm(nn.Module):
         output[0] = self.filter_out_0(output[0])
         output[0] = self.batchNorm_0(output[0])
         output[0] = self.leaky(output[0])
-        output[1] += output[0]
-        output[1] = self.filter_out_1(output[1])
-        output[1] = self.batchNorm_1(output[1])
-        output[1] = self.leaky(output[1])
-        return torch.max(output[0], output[1])
+        output_1 = output[1] + output[0]
+        output_1 = self.filter_out_1(output_1)
+        output_1 = self.batchNorm_1(output_1)
+        output_1 = self.leaky(output_1)
+        return torch.max(output[0], output_1)
 
 
 class network_test(nn.Module):
