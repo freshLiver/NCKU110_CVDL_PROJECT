@@ -1,7 +1,6 @@
-from typing import List, Dict
+from typing import *
 
 import cv2
-import time
 import json
 
 import numpy as np
@@ -25,10 +24,6 @@ class ImageList(Dataset):
         self.imgList: Path = self.read_list(fileList)
         self.transform = transform
 
-        # DOI: 10.1109/ICCES48960.2019.9068182
-        # self.lower = np.array([0, 0, 133])
-        # self.upper = np.array([173, 197, 175])
-
     @staticmethod
     def read_list(fileList):
         imgList = []
@@ -49,20 +44,6 @@ class ImageList(Dataset):
 
         # cannied1 = cv2.Canny(normalized, 100, 100)
         cannied = cv2.Canny(normalized, 125, 125)
-
-        # plt.figure(0)
-        # plt.imshow(Image.fromarray(origin))
-        # plt.show()
-        # plt.figure(1)
-        # plt.imshow(Image.fromarray(normalized))
-        # plt.show()
-
-        # plt.figure(2)
-        # plt.show()
-        # plt.figure(3)
-        # plt.imshow(Image.fromarray(cannied1))
-        # plt.imshow(Image.fromarray(cannied2))
-        # plt.show()
 
         # apply transform in exists
         originPIL = Image.fromarray(origin)
