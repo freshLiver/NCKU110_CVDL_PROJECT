@@ -38,21 +38,10 @@ class ImageList(Dataset):
         # get target image and its label
         imgPath, target = self.imgList[index]
 
-        # read as grayscale image
-        origin = cv2.imread(str(self.root.joinpath(imgPath)), cv2.IMREAD_GRAYSCALE)
-        normalized = cv2.normalize(origin, None, 0, 255, cv2.NORM_MINMAX)
+        # read image
+        img = Image.open(str(self.root.joinpath(imgPath))).convert("L")
+        img = self.transform(img) if self.transform is not None else img
 
-        # cannied1 = cv2.Canny(normalized, 100, 100)
-        cannied = cv2.Canny(normalized, 125, 125)
-
-        # apply transform in exists
-        originPIL = Image.fromarray(origin)
-        originPIL = self.transform(originPIL) if self.transform else originPIL
-
-        canniedPIL = Image.fromarray(cannied)
-        canniedPIL = self.transform(canniedPIL) if self.transform else canniedPIL
-
-        img = np.vstack((originPIL, canniedPIL))
         # raise RuntimeError()
 
         # return result
