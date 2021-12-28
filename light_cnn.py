@@ -17,16 +17,24 @@ class MaxFeatureMap(nn.Module):
 
         self.out_channels = out_channels
 
+        self.norm_sigmoid = nn.Sequential(
+            nn.BatchNorm2d(out_channels),
+            nn.Sigmoid()
+        )
+
         if type == 1:
-            self.filter = nn.Conv2d(
-                in_channels, 2*out_channels, kernel_size=kernel_size, stride=stride, padding=padding)
+            self.filter = nn.Conv2d(in_channels, 2*out_channels, kernel_size=kernel_size, stride=stride, padding=padding)
         else:
             self.filter = nn.Linear(in_channels, 2*out_channels)
 
     def forward(self, x):
         x = self.filter(x)
         out = torch.split(x, self.out_channels, 1)
-        return torch.max(out[0], out[1])
+
+        part1 = self.norm_sigmoid(out[0])
+        part2 = self.norm_sigmoid(out[1])
+
+        return torch.max(part1, part2)
 
 
 class group(nn.Module):
