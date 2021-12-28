@@ -1,14 +1,12 @@
 from typing import *
 
-import cv2
 import json
-
-import numpy as np
 from PIL import Image
 from pathlib import Path
 from matplotlib import pyplot as plt
 
 import torch
+from torchvision import transforms
 from torch.utils.data import DataLoader, Dataset
 
 
@@ -17,7 +15,7 @@ class ImageList(Dataset):
     def __init__(self,
                  root: Path,
                  fileList: Path,
-                 transform=None
+                 transform: transforms.Compose = None
                  ) -> None:
 
         self.root: Path = root
@@ -25,7 +23,8 @@ class ImageList(Dataset):
         self.transform = transform
 
     @staticmethod
-    def read_list(fileList):
+    def read_list(fileList: Path):
+
         imgList = []
         with open(fileList, 'r') as file:
             for line in file.readlines():
@@ -33,7 +32,7 @@ class ImageList(Dataset):
                 imgList.append((imgPath, int(label)))
         return imgList
 
-    def __getitem__(self, index):
+    def __getitem__(self, index: int):
 
         # get target image and its label
         imgPath, target = self.imgList[index]
@@ -60,7 +59,12 @@ class TrainingHelper:
             self.valid_losses: List = []
             self.valid_accuracies: List = []
 
-        def push(self, train_loss: float, train_acc: float, valid_loss: float, valid_acc: float) -> None:
+        def push(self,
+                 train_loss: float,
+                 train_acc: float,
+                 valid_loss: float,
+                 valid_acc: float) -> None:
+
             self.epochs += 1
             self.train_losses.append(train_loss)
             self.train_accuracies.append(train_acc)
@@ -69,8 +73,8 @@ class TrainingHelper:
 
         def visualize(self,
                       init_epoch=0,
-                      loss_dst: str = None,        # save loss figure to this path
-                      accuracy_dst: str = None     # save accuracy figure to this path
+                      loss_dst: Path = None,        # save loss figure to this path
+                      accuracy_dst: Path = None     # save accuracy figure to this path
                       ) -> None:
 
             # set x points
@@ -100,7 +104,7 @@ class TrainingHelper:
             if accuracy_dst is not None:
                 acc_fig.savefig(accuracy_dst)
 
-        def save(self, dst: str):
+        def save(self, dst: Path):
             with open(dst, 'w') as out:
                 train_log = {
                     'train_losses': self.train_losses,
@@ -186,19 +190,16 @@ class TrainingHelper:
             print(f'Epoch [{iEpoch}]')
             print(f'  ├ Training')
 
-        # epoch body
         if mode == 'train':
             print(f'  │    [{iBatch}/{nBatch}]')
             print(f'  │    ├ Loss {losses.val:.3f} ({losses.avg:.4f})')
             print(f'  │    └ Acc  {accuracies.val:.3f} ({accuracies.avg:.4f})')
 
-        # epoch tail
         elif mode == 'valid':
             print(f'  └ Validation')
             print(f'       ├ Avg Loss {losses.avg:.4f}')
             print(f'       └ Avg Acc  {accuracies.avg:.4f}')
 
-        # test
         elif mode == 'test':
             print(f'Testing')
             print(f'   ├ Avg Loss {losses.avg:.4f}')

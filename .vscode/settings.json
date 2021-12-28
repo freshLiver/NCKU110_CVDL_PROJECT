@@ -10,6 +10,7 @@
         "maxk",
         "optim",
         "prec",
+        "pyplot",
         "topk",
         "xlabel",
         "ylabel"
