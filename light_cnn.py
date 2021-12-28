@@ -31,10 +31,12 @@ class MaxFeatureMap(nn.Module):
         x = self.filter(x)
         out = torch.split(x, self.out_channels, 1)
 
-        part1 = self.norm_sigmoid(out[0])
-        part2 = self.norm_sigmoid(out[1])
+        if out[0].dim() == 4:
+            part1 = self.norm_sigmoid(out[0])
+            part2 = self.norm_sigmoid(out[1])
+            return torch.max(part1, part2)
 
-        return torch.max(part1, part2)
+        return torch.max(out[0], out[1])
 
 
 class group(nn.Module):
