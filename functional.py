@@ -253,8 +253,8 @@ class TrainingHelper:
 
     def validate(self, iEpoch: int, mode='valid'):
         """
-
         """
+
         losses = TrainingHelper.AverageMeter()
         accuracies = TrainingHelper.AverageMeter()
 
