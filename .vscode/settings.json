@@ -12,6 +12,7 @@
         "prec",
         "pyplot",
         "topk",
+        "vggface",
         "xlabel",
         "ylabel"
     ]
