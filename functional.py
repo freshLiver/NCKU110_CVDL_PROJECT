@@ -14,21 +14,23 @@ class ImageList(Dataset):
 
     def __init__(self,
                  root: Path,
-                 fileList: Path,
+                 file_list: Path,
+                 label_delim: str,
                  transform: transforms.Compose = None
                  ) -> None:
 
         self.root: Path = root
-        self.imgList: Path = self.read_list(fileList)
+        self.delim: str = label_delim
+        self.imgList: Path = self.read_list(file_list, label_delim)
         self.transform = transform
 
     @staticmethod
-    def read_list(fileList: Path):
+    def read_list(fileList: Path, delim: str):
 
         imgList = []
         with open(fileList, 'r') as file:
             for line in file.readlines():
-                imgPath, label = line.strip().split(' ')
+                imgPath, label = line.strip().split(delim)
                 imgList.append((imgPath, int(label)))
         return imgList
 
