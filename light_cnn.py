@@ -72,9 +72,9 @@ class maxout_fm(nn.Module):
         output = list(torch.split(input, self.out_channels, 1))
 
         for i in range(2):
-            output[i] = self.pre_batch_norms[i](output[i])
+            #output[i] = self.pre_batch_norms[i](output[i])
             output[i] = self.filter_halfs[i](output[i])
-            output[i] = self.post_batch_norms[i](output[i])
+            #output[i] = self.post_batch_norms[i](output[i])
             output[i] = self.leaky(output[i])
             
         return output[0] + output[1]
