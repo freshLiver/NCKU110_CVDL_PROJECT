@@ -70,11 +70,24 @@ class maxout_fm(nn.Module):
     def forward(self, input):
         input = self.filter_split(input)
         output = list(torch.split(input, self.out_channels, 1))
-        for i in range(2):
+
+        output[0] = self.pre_batch_norms[0](output[0])
+        output[0] = self.filter_halfs[0](output[0])
+        output[0] = self.post_batch_norms[0](output[0])
+        output[0] = self.leaky(output[0])
+
+        output[1] += output[0]
+
+        output[1] = self.pre_batch_norms[1](output[1])
+        output[1] = self.filter_halfs[1](output[1])
+        output[1] = self.post_batch_norms[1](output[1])
+        output[1] = self.leaky(output[1])
+
+        '''for i in range(2):
             output[i] = self.pre_batch_norms[i](output[i])
             output[i] = self.filter_halfs[i](output[i])
             output[i] = self.post_batch_norms[i](output[i])
-            output[i] = self.leaky(output[i])
+            output[i] = self.leaky(output[i])'''
         return output[0] + output[1]
 
 
