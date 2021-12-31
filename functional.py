@@ -1,15 +1,12 @@
-from typing import List, Dict
+from typing import *
 
-import cv2
-import time
 import json
-
-import numpy as np
 from PIL import Image
 from pathlib import Path
 from matplotlib import pyplot as plt
 
 import torch
+from torchvision import transforms
 from torch.utils.data import DataLoader, Dataset
 
 
@@ -17,45 +14,34 @@ class ImageList(Dataset):
 
     def __init__(self,
                  root: Path,
-                 fileList: Path,
-                 transform=None
+                 file_list: Path,
+                 label_delim: str,
+                 transform: transforms.Compose = None
                  ) -> None:
 
         self.root: Path = root
-        self.imgList: Path = self.read_list(fileList)
+        self.delim: str = label_delim
+        self.imgList: Path = self.read_list(file_list, label_delim)
         self.transform = transform
 
-        # DOI: 10.1109/ICCES48960.2019.9068182
-        self.lower = np.array([0, 0, 133])
-        self.upper = np.array([173, 197, 175])
-
     @staticmethod
-    def read_list(fileList):
+    def read_list(fileList: Path, delim: str):
+
         imgList = []
         with open(fileList, 'r') as file:
             for line in file.readlines():
-                imgPath, label = line.strip().split(' ')
+                imgPath, label = line.strip().split(delim)
                 imgList.append((imgPath, int(label)))
         return imgList
 
-    def __getitem__(self, index):
+    def __getitem__(self, index: int):
 
         # get target image and its label
         imgPath, target = self.imgList[index]
 
-        # read as grayscale image
+        # read image
         img = Image.open(str(self.root.joinpath(imgPath))).convert("L")
-
-
-
-        #hsvImage = cv2.cvtColor(bgrImage, cv2.COLOR_BGR2HSV)
-
-        #mask = cv2.inRange(hsvImage, self.lower, self.upper)
-        #masked = cv2.bitwise_and(hsvImage, hsvImage, mask=mask)
-
-        # apply transform in exists
-        #img = Image.fromarray(masked)
-        img = self.transform(img) if self.transform else img
+        img = self.transform(img) if self.transform is not None else img
 
         # return result
         return img, target
@@ -75,7 +61,12 @@ class TrainingHelper:
             self.valid_losses: List = []
             self.valid_accuracies: List = []
 
-        def push(self, train_loss: float, train_acc: float, valid_loss: float, valid_acc: float) -> None:
+        def push(self,
+                 train_loss: float,
+                 train_acc: float,
+                 valid_loss: float,
+                 valid_acc: float) -> None:
+
             self.epochs += 1
             self.train_losses.append(train_loss)
             self.train_accuracies.append(train_acc)
@@ -84,8 +75,8 @@ class TrainingHelper:
 
         def visualize(self,
                       init_epoch=0,
-                      loss_dst: str = None,        # save loss figure to this path
-                      accuracy_dst: str = None     # save accuracy figure to this path
+                      loss_dst: Path = None,        # save loss figure to this path
+                      accuracy_dst: Path = None     # save accuracy figure to this path
                       ) -> None:
 
             # set x points
@@ -115,7 +106,7 @@ class TrainingHelper:
             if accuracy_dst is not None:
                 acc_fig.savefig(accuracy_dst)
 
-        def save(self, dst: str):
+        def save(self, dst: Path):
             with open(dst, 'w') as out:
                 train_log = {
                     'train_losses': self.train_losses,
@@ -201,19 +192,16 @@ class TrainingHelper:
             print(f'Epoch [{iEpoch}]')
             print(f'  ├ Training')
 
-        # epoch body
         if mode == 'train':
             print(f'  │    [{iBatch}/{nBatch}]')
             print(f'  │    ├ Loss {losses.val:.3f} ({losses.avg:.4f})')
             print(f'  │    └ Acc  {accuracies.val:.3f} ({accuracies.avg:.4f})')
 
-        # epoch tail
         elif mode == 'valid':
             print(f'  └ Validation')
             print(f'       ├ Avg Loss {losses.avg:.4f}')
             print(f'       └ Avg Acc  {accuracies.avg:.4f}')
 
-        # test
         elif mode == 'test':
             print(f'Testing')
             print(f'   ├ Avg Loss {losses.avg:.4f}')
@@ -267,8 +255,8 @@ class TrainingHelper:
 
     def validate(self, iEpoch: int, mode='valid'):
         """
-
         """
+
         losses = TrainingHelper.AverageMeter()
         accuracies = TrainingHelper.AverageMeter()
 
