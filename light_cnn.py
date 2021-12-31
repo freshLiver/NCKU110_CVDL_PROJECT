@@ -76,9 +76,10 @@ class maxout_fm(nn.Module):
         output[0] = self.post_batch_norms[0](output[0])
         output[0] = self.leaky(output[0])
 
-        output_1 = output[0] + output[1]
+        output[1] = self.pre_batch_norms[1](output[1])
 
-        output_1 = self.pre_batch_norms[1](output_1)
+        output_1 = output[0] + output[1]
+        
         output_1 = self.filter_halfs[1](output_1)
         output_1 = self.post_batch_norms[1](output_1)
         output_1 = self.leaky(output_1)
