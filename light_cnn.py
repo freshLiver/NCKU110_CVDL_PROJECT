@@ -1,3 +1,4 @@
+from typing import ForwardRef
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -79,15 +80,27 @@ class maxout_fm(nn.Module):
             
         return output[0] + output[1]
 
+class mfm(nn.module):
+    def __init__(self, in_channels, out_channels, kernel_size=3, stride=1, padding=1):
+        super(mfm, self).__init__()
+
+        self.out_channels = out_channels
+
+        self.filter = nn.Conv2d(in_channels, out_channels * 2, kernel_size, stride, padding)
+
+    def forward(self, input):
+        input = self.filter(input)
+        out = torch.split(x, self.out_channels, 1)
+        return torch.max(out[0], out[1])
 
 class network_test(nn.Module):
     def __init__(self, num_classes):
         super(network_test, self).__init__()
         self.features = nn.Sequential(
-            
+            mfm(1, 48, 5, 1, 2),
         )
     def forward(self, input):
-        output = input
+        output = self.features(input)
         return output
 
 
