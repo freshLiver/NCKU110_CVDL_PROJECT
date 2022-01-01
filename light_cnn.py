@@ -30,7 +30,7 @@ class MaxFeatureMap(nn.Module):
         out_min = torch.min(out[0], torch.min(out[1], out[2]))
         out_max = torch.max(out[0], torch.max(out[1], out[2]))
 
-        return torch.div(out_min + out_max, 2)
+        return torch.mul(out_min + out_max, 0.75)
 
 
 class group(nn.Module):
