@@ -90,7 +90,7 @@ class mfm(nn.Module):
 
     def forward(self, input):
         input = self.filter(input)
-        out = torch.split(x, self.out_channels, 1)
+        out = torch.split(input, self.out_channels, 1)
         return torch.max(out[0], out[1])
 
 class network_test(nn.Module):
