@@ -80,7 +80,7 @@ class maxout_fm(nn.Module):
             
         return output[0] + output[1]
 
-class mfm(nn.module):
+class mfm(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size=3, stride=1, padding=1):
         super(mfm, self).__init__()
 
