@@ -19,14 +19,18 @@ class MaxFeatureMap(nn.Module):
 
         if type == 1:
             self.filter = nn.Conv2d(
-                in_channels, 2*out_channels, kernel_size=kernel_size, stride=stride, padding=padding)
+                in_channels, 3*out_channels, kernel_size=kernel_size, stride=stride, padding=padding)
         else:
-            self.filter = nn.Linear(in_channels, 2*out_channels)
+            self.filter = nn.Linear(in_channels, 3*out_channels)
 
     def forward(self, x):
         x = self.filter(x)
         out = torch.split(x, self.out_channels, 1)
-        return torch.div(out[0] + out[1], 2)
+
+        out_min = torch.min(out[0], torch.min(out[1], out[2]))
+        out_max = torch.max(out[0], torch.max(out[1], out[2]))
+
+        return torch.div(out_min + out_max, 2)
 
 
 class group(nn.Module):
