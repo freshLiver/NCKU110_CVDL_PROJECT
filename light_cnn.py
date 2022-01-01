@@ -58,50 +58,62 @@ class resblock(nn.Module):
         out = out + res
         return out
 
-class maxout_fm(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size=3, stride=1, padding=1):
-        super(maxout_fm, self).__init__()
-        self.out_channels = out_channels
-        self.filter_split = nn.Conv2d(in_channels, out_channels * 2, kernel_size=kernel_size, stride=stride, padding=padding)
-        self.filter_halfs = nn.ModuleList([nn.Conv2d(out_channels, out_channels, kernel_size=kernel_size, stride=stride, padding=padding) for i in range(2)])
-        self.pre_batch_norms = nn.ModuleList([nn.BatchNorm2d(out_channels) for i in range(2)])
-        self.post_batch_norms = nn.ModuleList([nn.BatchNorm2d(out_channels) for i in range(2)])
-        self.leaky = nn.LeakyReLU()
-
-    def forward(self, input):
-        input = self.filter_split(input)
-        output = list(torch.split(input, self.out_channels, 1))
-
-        for i in range(2):
-            output[i] = self.pre_batch_norms[i](output[i])
-            output[i] = self.filter_halfs[i](output[i])
-            output[i] = self.post_batch_norms[i](output[i])
-            output[i] = self.leaky(output[i])
-            
-        return output[0] + output[1]
-
 class mfm(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size=3, stride=1, padding=1):
         super(mfm, self).__init__()
 
         self.out_channels = out_channels
 
-        self.filter = nn.Conv2d(in_channels, out_channels * 2, kernel_size, stride, padding)
+        self.filter1 = nn.Conv2d(in_channels, out_channels * 2, kernel_size, stride, padding)
+        self.filter2 = nn.ModuleList([nn.Conv2d(out_channels, out_channels, 3, 1, 1) for i in range(2)])
+        self.batchNorm1 = nn.ModuleList([nn.BatchNorm2d(out_channels) for i in range(2)])
+        self.batchNorm2 = nn.ModuleList([nn.BatchNorm2d(out_channels) for i in range(2)])
 
     def forward(self, input):
-        input = self.filter(input)
+        input = self.filter1(input)
         out = torch.split(input, self.out_channels, 1)
-        return torch.max(out[0], out[1])
+        
+        local_max = torch.max(out[0], out[1])
+        local_max = self.batchNorm1[0](local_max)
+        local_max = self.filter2[0](local_max)
+        local_max = nn.functional.leaky_relu(self.batchNorm2[0](local_max))
+        
+        local_min = torch.min(out[0], out[1])
+        local_min = self.batchNorm1[1](local_min)
+        local_min = self.filter2[1](local_min)
+        local_min = nn.functional.leaky_relu(self.batchNorm2[1](local_min))
+        
+        return local_max + local_min
+    
+class mfm_group(nn.Module):
+    def __init__(self, in_channels, out_channels, kernel_size=3, stride=1, padding=1):
+        super(mfm_group, self).__init__()
+        self.conv_one2one = mfm(in_channels, in_channels, 1, 1, 0)
+        self.conv_in2out = mfm(in_channels, out_channels, kernel_size, stride, padding)
+
+    def forward(self, x):
+        x = self.conv_one2one(x)
+        x = self.conv_in2out(x)
+        return x
 
 class network_test(nn.Module):
     def __init__(self, num_classes):
         super(network_test, self).__init__()
         self.features = nn.Sequential(
-            mfm(1, 48, 5, 1, 2),
+            mfm(1, 32, 5, 2, 2),
+            mfm_group(32, 64, 3, 2, 1),
+            mfm_group(64, 128, 3, 2, 1),
+            mfm_group(128, 256, 3, 2, 1),
+            nn.AvgPool2d((8, 8))
+        )
+        self.classifier = nn.Sequential(
+            nn.Linear(256, num_classes)
         )
     def forward(self, input):
         output = self.features(input)
-        return output
+        output = output.view((output.shape[0], -1))
+        output = self.classifier(output)
+        return output, output
 
 
 class network_9layers(nn.Module):
