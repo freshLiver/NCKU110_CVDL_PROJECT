@@ -85,6 +85,7 @@ class TrainingHelper:
             # draw loss graph
             loss_fig = plt.figure(1)
             plt.plot(pts, self.train_losses, pts, self.valid_losses)
+            plt.grid(axis='y', linewidth=0.5)
             plt.title('Training & Validation Loss')
             plt.xlabel('Epoch')
             plt.ylabel('Loss')
@@ -97,6 +98,7 @@ class TrainingHelper:
             # draw accuracy graph
             acc_fig = plt.figure(2)
             plt.plot(pts, self.train_accuracies, pts, self.valid_accuracies)
+            plt.grid(axis='y', linewidth=0.5)
             plt.title('Training & Validation Accuracy')
             plt.xlabel('Epoch')
             plt.ylabel('Accuracy')
